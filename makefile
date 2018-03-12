@@ -5,7 +5,7 @@ INCLUDES =
 
 OBJ      = main.o 
 RM       = rm -f
-BIN      = main
+BIN      = Lexique
 DIRNAME  = $(shell basename $$PWD)
 BACKUP   = $(shell date +`basename $$PWD`-%m.%d.%H.%M.tgz)
 STDNAME  = $(DIRNAME).tgz
