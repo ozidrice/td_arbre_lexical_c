@@ -1,14 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#define MAX_STRING_LENGTH 51 //With \0
 
 typedef struct noeud{
 	unsigned char lettre;
 	struct noeud *fg, *frd;
 } Noeud, *Arbre;
 
+
+/*
+*	Alloue la mémoire necessaire à un arbre
+*	et lui défini les valeurs entrées
+*/
 Arbre allocNoeud(char val, Arbre fg, Arbre frd){
-    Arbre tmp;
-    tmp = malloc(sizeof(Noeud));
+	Arbre tmp;
+	tmp = malloc(sizeof(Noeud));
 	if (tmp != NULL){
 		tmp->lettre = val;
 		tmp->fg = fg;
@@ -17,68 +24,47 @@ Arbre allocNoeud(char val, Arbre fg, Arbre frd){
 	return tmp;
 }
 
+/*
+*	Ajoute un mot à l'arbre en concervant
+*	 les propriété de l'arbre
+*/
 void ajoutMot(Arbre *a, char *mot){
-    if (*a == NULL){
-        *a = allocNoeud(mot[0], NULL, NULL);
-        if(mot[0] != '\0'){
-            ajoutMot(&((*a)->fg), &mot[1]);
-        }
-    }
-    else if((*a)->lettre == mot[0]){
-        ajoutMot(&((*a)->fg), &mot[1]);
-    }
-    else if ((*a)->lettre > mot[0]){
-        ajoutMot(&((*a)->frd), mot);
-    }
-    else if ((*a)->lettre < mot[0]){
-        //mot[0] = (*a)->frd->lettre;
-        ajoutMot(&((*a)->frd), mot);
-    }
-}
-
-FILE *openFile(char *file, char *mode){
-	FILE *f = fopen(file,mode);
-	if(f == NULL)
-		return NULL;
-	return f;
+	if (*a == NULL){
+		*a = allocNoeud(mot[0], NULL, NULL);
+		if(mot[0] != '\0'){
+			ajoutMot(&((*a)->fg), &mot[1]);
+		}
+	}
+	else if((*a)->lettre == mot[0]){
+		ajoutMot(&((*a)->fg), &mot[1]);
+	}
+	else if ((*a)->lettre > mot[0]){
+		ajoutMot(&((*a)->frd), mot);
+	}
+	else if ((*a)->lettre < mot[0]){
+		ajoutMot(&((*a)->frd), mot);
+	}
 }
 
 /*
-void affiche(Tarbre a, char* str){
+*	Sauvegarde dans le fichier tous les mots de l'arbre dans l'ordre alphabétique 
+*	str = NULL pour lancer la fonction 
+*/
+void save_alphabetical_order(FILE *f, Arbre a, char *str){
 	if(a != NULL){
 		if(str == NULL){
-			char *c = (char*)malloc(128);
-			c[0] = '\0';
-			str = c;
-		}
-		char tmp[128];
+			str = (char*)malloc(MAX_STRING_LENGTH);
+			str[0] = '\0';
+		}	
+		char tmp[MAX_STRING_LENGTH];
 		strcpy(tmp,str);
+		strcat(tmp, &a->lettre);
 
-		affiche(a->frg,str);
 		if(a->lettre == '\0')
-			printf("%s\n",strcat(tmp,&a->lettre));
-		affiche(a->fils,strcat(tmp,&a->lettre));
-		affiche(a->frd,str);
+			fprintf(f,"%s\n",tmp);
+		save_alphabetical_order(f,a->fg,tmp);
+		save_alphabetical_order(f,a->frd,str);
 	}
-}
-*/
-
-void save_alphabetical_order(FILE *f, Arbre a, char *str){
-	fprintf(f, "%s", a->lettre);
-
-	if(str == NULL){
-		str = (char*)malloc(51);
-		str[0] = '\0';
-	}
-	char tmp[51];
-	strcpy(tmp,str);
-
-	if(a->lettre == '\0')
-		printf("%s\n",strcat(tmp,&a->lettre));
-
-	save_alphabetical_order(f,a->fg,tmp);
-	save_alphabetical_order(f,a->frd,tmp);
-
 }
 
 int main(int argc, char const *argv[])
@@ -88,30 +74,27 @@ int main(int argc, char const *argv[])
 		return 1;
 	}
 
+	char * file = argv[argc-1];
 
-	FILE *texte = openFile(argv[argc-1], "r");	
-	
-    Arbre a = NULL;
-    char *mot1 = "ce";
-    char *mot2 = "ces";
-    char *mot3 = "des";
-    char *mot4 = "le";
-    char *mot5 = "les";
-    char *mot6 = "lettre";
-    char *mot7 = "mes";
-    char *mot8 = "mettre";
-    
-    ajoutMot(&a, mot1);
-    ajoutMot(&a, mot2);
-    ajoutMot(&a, mot3);
-    ajoutMot(&a, mot4);
-    ajoutMot(&a, mot5);
-    ajoutMot(&a, mot6);
-    ajoutMot(&a, mot7);
-    ajoutMot(&a, mot8);
+	FILE *texte = fopen(file, "r");	
+	if(texte == NULL){
+		fprintf(stderr, "ERROR : Fichier illisible\n");	
+		return 1;
+	}
 
+	Arbre a = NULL;
+	ajoutMot(&a, "ce");
+	ajoutMot(&a, "ces");
+	ajoutMot(&a, "des");
+	ajoutMot(&a, "le");
+	ajoutMot(&a, "les");
+	ajoutMot(&a, "lettre");
+	ajoutMot(&a, "mes");
+	ajoutMot(&a, "mettre");
 
-	fclose(f);
-	free(f);
+	save_alphabetical_order(fopen(strcat(file,".L"), "w"),a,NULL);	
+
+	fclose(texte);
+	free(texte);
 	return 0;
 }
