@@ -6,17 +6,35 @@ typedef struct noeud{
 	struct noeud *fg, *frd;
 } Noeud, *Arbre;
 
-Arbre allocNoeud(char val){
-	Arbre tmp;
-	tmp = malloc(sizeof(Noeud));
+Arbre allocNoeud(char val, Arbre fg, Arbre frd){
+    Arbre tmp;
+    tmp = malloc(sizeof(Noeud));
 	if (tmp != NULL){
 		tmp->lettre = val;
-		tmp->fg = NULL;
-		tmp->frd = NULL;
+		tmp->fg = fg;
+		tmp->frd = frd;
 	}
 	return tmp;
 }
 
+void ajoutMot(Arbre *a, char *mot){
+    if (*a == NULL){
+        *a = allocNoeud(mot[0], NULL, NULL);
+        if(mot[0] != '\0'){
+            ajoutMot(&((*a)->fg), &mot[1]);
+        }
+    }
+    else if((*a)->lettre == mot[0]){
+        ajoutMot(&((*a)->fg), &mot[1]);
+    }
+    else if ((*a)->lettre > mot[0]){
+        ajoutMot(&((*a)->frd), mot);
+    }
+    else if ((*a)->lettre < mot[0]){
+        //mot[0] = (*a)->frd->lettre;
+        ajoutMot(&((*a)->frd), mot);
+    }
+}
 
 FILE *openFile(char *file, char *mode){
 	FILE *f = fopen(file,mode);
@@ -73,7 +91,24 @@ int main(int argc, char const *argv[])
 
 	FILE *texte = openFile(argv[argc-1], "r");	
 	
-
+    Arbre a = NULL;
+    char *mot1 = "ce";
+    char *mot2 = "ces";
+    char *mot3 = "des";
+    char *mot4 = "le";
+    char *mot5 = "les";
+    char *mot6 = "lettre";
+    char *mot7 = "mes";
+    char *mot8 = "mettre";
+    
+    ajoutMot(&a, mot1);
+    ajoutMot(&a, mot2);
+    ajoutMot(&a, mot3);
+    ajoutMot(&a, mot4);
+    ajoutMot(&a, mot5);
+    ajoutMot(&a, mot6);
+    ajoutMot(&a, mot7);
+    ajoutMot(&a, mot8);
 
 
 	fclose(f);
