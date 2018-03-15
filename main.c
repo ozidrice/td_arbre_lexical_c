@@ -42,7 +42,8 @@ void ajoutMot(Arbre *a, char *mot){
 		ajoutMot(&((*a)->frd), mot);
 	}
 	else if ((*a)->lettre < mot[0]){
-		ajoutMot(&((*a)->frd), mot);
+		//TODO
+		ajoutMot(&((*a)->frd), mot);//MARCHE PAS
 	}
 }
 
