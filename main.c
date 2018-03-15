@@ -4,7 +4,7 @@
 #define MAX_STRING_LENGTH 51 //With \0
 
 typedef struct noeud{
-	unsigned char lettre;
+	char lettre;
 	struct noeud *fg, *frd;
 } Noeud, *Arbre;
 
@@ -47,6 +47,7 @@ void ajoutMot(Arbre *a, char *mot){
 	}
 }
 
+
 /*
 *	Lit le fichier f et charge tout les mots dans l'arbre
 */
@@ -86,8 +87,9 @@ int main(int argc, char const *argv[])
 	}
 
 	//Chargement du fichier mis en parametre
-	char * file = argv[argc-1];
-	FILE *texte = fopen(file, "r");	
+	char filename[128];
+	strcpy(filename,argv[argc-1]);
+	FILE *texte = fopen(filename, "r");	
 	if(texte == NULL){
 		fprintf(stderr, "ERROR : Fichier impossible à lire\n");	
 		return 1;
@@ -98,7 +100,7 @@ int main(int argc, char const *argv[])
 	read_file_load_tree(texte,&a);
 	
 	//Sauvegarde dans l'ordre alphabetique dans .L
-	FILE *file_alphabetical_order = fopen(strcat(file,".L"), "w");
+	FILE *file_alphabetical_order = fopen(strcat(filename,".L"), "w");
 	save_alphabetical_order(file_alphabetical_order,a,NULL);	
 
 	//Free
