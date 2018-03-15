@@ -35,21 +35,14 @@ void ajoutMot(Arbre *a, char *mot){
 			ajoutMot(&((*a)->fg), &mot[1]);
 		}
 	}
-	else {
-		if((*a)->lettre == mot[0]){
-			ajoutMot(&((*a)->fg), &mot[1]);
-		}
-		else {
-			if ((*a)->lettre > mot[0]){
-				ajoutMot(&((*a)->frd), mot);
-			}
-			else{
-				if ((*a)->lettre < mot[0]){
-					//TODO
-					ajoutMot(&((*a)->frd), mot);//MARCHE PAS
-				}
-			}
-		}
+	else if((*a)->lettre == mot[0]){
+		ajoutMot(&((*a)->fg), &mot[1]);
+	}
+	else if ((*a)->lettre > mot[0]){
+		ajoutMot(&((*a)->frd), mot);
+	}
+	else if ((*a)->lettre < mot[0]){
+		ajoutMot(&((*a)->frd), mot);
 	}
 }
 
