@@ -85,19 +85,26 @@ int main(int argc, char const *argv[])
 		return 1;
 	}
 
+	//Chargement du fichier mis en parametre
 	char * file = argv[argc-1];
-
 	FILE *texte = fopen(file, "r");	
 	if(texte == NULL){
 		fprintf(stderr, "ERROR : Fichier impossible à lire\n");	
 		return 1;
 	}
 
+	//Creation de l'arbre
 	Arbre a = NULL;
 	read_file_load_tree(texte,&a);
-	save_alphabetical_order(fopen(strcat(file,".L"), "w"),a,NULL);	
+	
+	//Sauvegarde dans l'ordre alphabetique dans .L
+	FILE *file_alphabetical_order = fopen(strcat(file,".L"), "w");
+	save_alphabetical_order(file_alphabetical_order,a,NULL);	
 
+	//Free
 	fclose(texte);
 	free(texte);
+	fclose(file_alphabetical_order);
+	free(file_alphabetical_order);
 	return 0;
 }
