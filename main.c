@@ -47,6 +47,16 @@ void ajoutMot(Arbre *a, char *mot){
 }
 
 /*
+*	Lit le fichier f et charge tout les mots dans l'arbre
+*/
+void read_file_load_tree(FILE *f, Arbre *a){
+	char tmp[MAX_STRING_LENGTH];
+	while(fscanf(f,"%51s",tmp) != EOF){
+		ajoutMot(a,tmp);
+	}
+}
+
+/*
 *	Sauvegarde dans le fichier tous les mots de l'arbre dans l'ordre alphabétique 
 *	str = NULL pour lancer la fonction 
 */
@@ -78,20 +88,12 @@ int main(int argc, char const *argv[])
 
 	FILE *texte = fopen(file, "r");	
 	if(texte == NULL){
-		fprintf(stderr, "ERROR : Fichier illisible\n");	
+		fprintf(stderr, "ERROR : Fichier impossible à lire\n");	
 		return 1;
 	}
 
 	Arbre a = NULL;
-	ajoutMot(&a, "ce");
-	ajoutMot(&a, "ces");
-	ajoutMot(&a, "des");
-	ajoutMot(&a, "le");
-	ajoutMot(&a, "les");
-	ajoutMot(&a, "lettre");
-	ajoutMot(&a, "mes");
-	ajoutMot(&a, "mettre");
-
+	read_file_load_tree(texte,&a);
 	save_alphabetical_order(fopen(strcat(file,".L"), "w"),a,NULL);	
 
 	fclose(texte);
