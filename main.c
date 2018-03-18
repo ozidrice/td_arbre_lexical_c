@@ -44,8 +44,9 @@ void ajoutMot(Arbre *a, char *mot){
 		ajoutMot(&((*a)->fg), &mot[1]);
 	}
 	else if ((*a)->lettre > mot[0]){
-        //TO DO
         Arbre tmp = allocNoeud(mot[0], NULL, *a);
+        tmp->frd = *a;
+        *a = tmp;	
         ajoutMot(&(tmp->fg), &mot[1]);
 	}
 	else if ((*a)->lettre < mot[0]){
@@ -107,6 +108,46 @@ void save_alphabetical_order(FILE *f, Arbre a, char *str){
 	}
 }
 
+/*
+*	Créé le contenu d'un fichier dot
+*/
+void createDotGraphContent(Arbre a, FILE *f){
+	if(a != NULL){	
+		if(a->lettre == '\0')
+			fprintf(f, "struct%p[label=\"<f0> |<f1> \\\\0|<f2> \"];\n", a);
+		else
+			fprintf(f, "struct%p[label=\"<f0> |<f1> %c|<f2> \"];\n", a, a->lettre);
+		if(!(a->frd == NULL && a->fg == NULL)){
+			if(a->fg != NULL){
+				fprintf(f, "struct%p:f0 -> struct%p:f1;\n", a, a->fg);
+				createDotGraphContent(a->fg,f);
+			}
+			if(a->frd != NULL){
+				fprintf(f, "struct%p:f2 -> struct%p:f1;\n", a, a->frd);
+				createDotGraphContent(a->frd,f);
+			}
+		}
+	}
+}
+
+/*
+*	Génère un fichier tree.dot correspondant à l'arbre
+*	Créé via la commande dot le pdf lui correspondant
+*	Affiche l'arbre via evince 
+*/
+void viewTree(Arbre a){
+	if(a != NULL){
+		FILE *f = fopen("tree.dot","w");
+		
+		//Create dot file
+		fprintf(f, "digraph D {\nnode [shape=record];\n");
+		createDotGraphContent(a,f);
+		fprintf(f, "}");
+	}else{
+		printf("[ERROR] : Impossible d'afficher l'arbre : ARBRE NULL\n");
+	}
+}
+
 int main(int argc, char const *argv[]) {
     
     Arbre a = NULL;
@@ -127,12 +168,13 @@ int main(int argc, char const *argv[]) {
     ajoutMot(&a, mot6);
     ajoutMot(&a, mot7);
     ajoutMot(&a, mot1);
-        
+    
+    viewTree(a);
+    
 	/*if(argc == 1){
 		fprintf(stderr, "ERROR : Fichier non spécifié\n");
 		return 1;
 	}
-
 	//Chargement du fichier mis en parametre
 	char filename[128];
 	strcpy(filename,argv[argc-1]);
@@ -141,7 +183,6 @@ int main(int argc, char const *argv[]) {
 		fprintf(stderr, "ERROR : Fichier impossible à lire\n");	
 		return 1;
 	}
-
 	//Creation de l'arbre
 	Arbre a = NULL;
 	read_file_load_tree(texte,&a);
@@ -149,7 +190,6 @@ int main(int argc, char const *argv[]) {
 	//Sauvegarde dans l'ordre alphabetique dans .L
 	FILE *file_alphabetical_order = fopen(strcat(filename,".L"), "w");
 	save_alphabetical_order(file_alphabetical_order,a,NULL);	
-
 	//Free
 	fclose(texte);
 	free(texte);
