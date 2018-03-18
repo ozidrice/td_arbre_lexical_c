@@ -39,7 +39,7 @@ void ajoutMot(Arbre *a, char *mot){
 		ajoutMot(&((*a)->fg), &mot[1]);
 	}
 	else if ((*a)->lettre > mot[0]){
-		ajoutMot(&((*a)->frd), mot);
+		// ajoutMot(&((*a)->frd), mot);
 	}
 	else if ((*a)->lettre < mot[0]){
 		//TODO
@@ -47,6 +47,44 @@ void ajoutMot(Arbre *a, char *mot){
 	}
 }
 
+/*
+*	Créé le contenu d'un fichier dot
+*/
+void createDotGraphContent(Arbre a, FILE *f){
+	if(a != NULL){	
+		if(a->lettre == '\0')
+			fprintf(f, "struct%p[label=\"<f0> |<f1> \\\\0|<f2> \"];\n", a);
+		else
+			fprintf(f, "struct%p[label=\"<f0> |<f1> %c|<f2> \"];\n", a, a->lettre);
+		if(!(a->frd == NULL && a->fg == NULL)){
+			if(a->fg != NULL){
+				fprintf(f, "struct%p:f0 -> struct%p:f1;\n", a, a->fg);
+				createDotGraphContent(a->fg,f);
+			}
+			if(a->frd != NULL){
+				fprintf(f, "struct%p:f2 -> struct%p:f1;\n", a, a->frd);
+				createDotGraphContent(a->frd,f);
+			}
+		}
+	}
+}
+
+/*
+*	Génère un fichier tree.dot correspondant à l'arbre
+*	Créé via la commande dot le pdf lui correspondant
+*/
+void viewTree(Arbre a){
+	if(a != NULL){
+		FILE *f = fopen("tree.dot","w");
+
+		//Create dot file
+		fprintf(f, "digraph D {\nnode [shape=record];\n");
+		createDotGraphContent(a,f);
+		fprintf(f, "}");
+	}else{
+		printf("[ERROR] : Impossible d'afficher l'arbre : ARBRE NULL\n");
+	}
+}
 
 /*
 *	Lit le fichier f et charge tout les mots dans l'arbre
@@ -79,6 +117,24 @@ void save_alphabetical_order(FILE *f, Arbre a, char *str){
 	}
 }
 
+/*
+*	Sauvegarde dans le fichier tous les mots de l'arbre
+*	dans le format d'un .DICO 
+*	(préfixe contenant \n si arbre null, ' ' si \0)
+*/
+void save_as_string(FILE *f, Arbre a){
+	if(a != NULL){
+		if(a->lettre != 0)
+			fprintf(f, "%c", a->lettre);
+		else 
+			fprintf(f," ");
+		save_as_string(f,a->fg);
+		save_as_string(f,a->frd);
+	}else{
+		fprintf(f,"\n");
+	}
+}
+
 int main(int argc, char const *argv[])
 {
 	if(argc == 1){
@@ -100,8 +156,20 @@ int main(int argc, char const *argv[])
 	read_file_load_tree(texte,&a);
 	
 	//Sauvegarde dans l'ordre alphabetique dans .L
-	FILE *file_alphabetical_order = fopen(strcat(filename,".L"), "w");
-	save_alphabetical_order(file_alphabetical_order,a,NULL);	
+	char filename_file_alphabetical_order[128];
+	strcpy(filename_file_alphabetical_order, filename);
+	strcat(filename_file_alphabetical_order,".L");
+	FILE *file_alphabetical_order = fopen(filename_file_alphabetical_order, "w");
+	save_alphabetical_order(file_alphabetical_order,a,NULL);
+
+	//Sauvegarde dans .DICO
+	char filename_file_save_string[128];
+	strcpy(filename_file_save_string, filename);
+	strcat(filename_file_save_string,".DICO");
+	FILE *file_save_string = fopen(filename_file_save_string, "w");
+	save_as_string(file_save_string,a);	
+
+	viewTree(a);
 
 	//Free
 	fclose(texte);
@@ -110,3 +178,9 @@ int main(int argc, char const *argv[])
 	free(file_alphabetical_order);
 	return 0;
 }
+
+/*
+estPresent
+sauvegarder en .DICO
+menu
+*/
