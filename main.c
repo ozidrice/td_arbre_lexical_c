@@ -26,7 +26,7 @@ Arbre allocNoeud(char val, Arbre fg, Arbre frd){
 
 /*
 *	Ajoute un mot à l'arbre en concervant
-*	 les propriété de l'arbre
+*	 les propriétés de l'arbre
 */
 void ajoutMot(Arbre *a, char *mot){
 	if (*a == NULL){
@@ -39,14 +39,37 @@ void ajoutMot(Arbre *a, char *mot){
 		ajoutMot(&((*a)->fg), &mot[1]);
 	}
 	else if ((*a)->lettre > mot[0]){
-		ajoutMot(&((*a)->frd), mot);
+        //TO DO
+        Arbre tmp = allocNoeud(mot[0], NULL, *a);
+        ajoutMot(&(tmp->fg), &mot[1]);
 	}
 	else if ((*a)->lettre < mot[0]){
-		//TODO
-		ajoutMot(&((*a)->frd), mot);//MARCHE PAS
+		ajoutMot(&((*a)->frd), mot);
 	}
 }
 
+/*
+*   Recherche un mot dans l'arbre:  return 1 présent.
+*                                   return 0 absent.
+*/
+int estPresent (Arbre *a, char *mot){
+    if (*a == NULL){
+        return 0;
+    }
+    else if((*a)->lettre == mot[0]){
+        if(mot[0] == '\0'){
+            return 1;
+        }
+        else estPresent(&((*a)->fg), &mot[1]);
+    }
+    else if((*a)->lettre < mot[0]){
+        estPresent(&((*a)->frd), &mot[0]);
+    }
+    else if((*a)->lettre > mot[0]){
+        return 0;
+    }
+    return 0;
+}
 
 /*
 *	Lit le fichier f et charge tout les mots dans l'arbre
@@ -79,9 +102,28 @@ void save_alphabetical_order(FILE *f, Arbre a, char *str){
 	}
 }
 
-int main(int argc, char const *argv[])
-{
-	if(argc == 1){
+int main(int argc, char const *argv[]) {
+    
+    Arbre a = NULL;
+    char *mot1 = "ce";
+    char *mot2 = "ces";
+    char *mot3 = "des";
+    char *mot4 = "le";
+    char *mot5 = "les";
+    char *mot6 = "lettre";
+    char *mot7 = "mes";
+    char *mot8 = "mettre";
+     
+    ajoutMot(&a, mot8);
+    ajoutMot(&a, mot2);
+    ajoutMot(&a, mot3);
+    ajoutMot(&a, mot4);
+    ajoutMot(&a, mot5);
+    ajoutMot(&a, mot6);
+    ajoutMot(&a, mot7);
+    ajoutMot(&a, mot1);
+        
+	/*if(argc == 1){
 		fprintf(stderr, "ERROR : Fichier non spécifié\n");
 		return 1;
 	}
@@ -108,5 +150,5 @@ int main(int argc, char const *argv[])
 	free(texte);
 	fclose(file_alphabetical_order);
 	free(file_alphabetical_order);
-	return 0;
+	return 0;*/
 }
