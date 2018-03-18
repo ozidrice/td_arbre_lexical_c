@@ -31,7 +31,7 @@ Arbre allocNoeud(char val, Arbre fg, Arbre frd){
 
 /*
 *	Ajoute un mot à l'arbre en concervant
-*	 les propriétés de l'arbre
+*	les propriétés de l'arbre
 */
 void ajoutMot(Arbre *a, char *mot){
 	if (*a == NULL){
@@ -107,6 +107,41 @@ void save_alphabetical_order(FILE *f, Arbre a, char *str){
 		save_alphabetical_order(f,a->frd,str);
 	}
 }
+
+/*
+*   Affiche le menu de fonctionnalités
+*/
+void afficheMenu() {
+        printf("Menu:\n");
+        printf("1 : Lexique -l nom_fichier (tri alphabétique)\n");
+        printf("2 : Lexique -s nom_fichier (sauvegarde arbre alphabétique)\n");
+        printf("3 : Lexique -r mot nom_fichier (recherche mot)\n");
+        printf("4 : Lexique -S nom_fichier (sauvegarde arbre)\n");
+}
+
+/*
+*   Reçoit le choix du menu -l ou -s ou -r ou -S
+*   lance la fonction correspondante
+*/
+void traiteMenu(FILE *f, Arbre a, char mot, char choix) {
+    afficheMenu();
+    switch (choix){
+        case 'l':
+
+            break;
+        case 's':
+            save_alphabetical_order(f, a, NULL);
+            break;
+        case 'r':
+            estPresent(&a, &mot);
+            break;
+        case 'S':
+
+            break;
+
+    }
+}
+
 
 /*
 *	Créé le contenu d'un fichier dot
