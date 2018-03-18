@@ -41,13 +41,14 @@ void ajoutMot(Arbre *a, char *mot){
 		}
 	}
 	else if((*a)->lettre == mot[0]){
-		ajoutMot(&((*a)->fg), &mot[1]);
+		if(mot[0] != '\0')
+			ajoutMot(&((*a)->fg), &mot[1]);
 	}
 	else if ((*a)->lettre > mot[0]){
-		Arbre tmp = allocNoeud(mot[0], NULL, *a);
+		Arbre tmp = NULL;	
+		ajoutMot(&tmp, mot);
 		tmp->frd = *a;
-		*a = tmp;	
-		ajoutMot(&(tmp->fg), &mot[1]);
+		*a = tmp;
 	}
 	else if ((*a)->lettre < mot[0]){
 		ajoutMot(&((*a)->frd), mot);
@@ -60,7 +61,7 @@ void ajoutMot(Arbre *a, char *mot){
 */
 void read_file_load_tree(FILE *f, Arbre *a){
 	char tmp[MAX_STRING_LENGTH];
-	while(fscanf(f,"%51s",tmp) != EOF){
+	while(fscanf(f,"%51s ",tmp) != EOF){
 		ajoutMot(a,tmp);
 	}
 }
@@ -249,6 +250,8 @@ int main(int argc, char *argv[])
 	//Free
 	fclose(texte);
 	free(texte);
+
+	
 	//Free Arbre
 	//TODO
 	return 0;
