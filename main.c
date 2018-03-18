@@ -44,10 +44,10 @@ void ajoutMot(Arbre *a, char *mot){
 		ajoutMot(&((*a)->fg), &mot[1]);
 	}
 	else if ((*a)->lettre > mot[0]){
-        Arbre tmp = allocNoeud(mot[0], NULL, *a);
-        tmp->frd = *a;
-        *a = tmp;	
-        ajoutMot(&(tmp->fg), &mot[1]);
+		Arbre tmp = allocNoeud(mot[0], NULL, *a);
+		tmp->frd = *a;
+		*a = tmp;	
+		ajoutMot(&(tmp->fg), &mot[1]);
 	}
 	else if ((*a)->lettre < mot[0]){
 		ajoutMot(&((*a)->frd), mot);
@@ -87,49 +87,133 @@ void save_alphabetical_order(FILE *f, Arbre a, char *str){
 }
 
 /*
-*   Affiche le menu de fonctionnalités
+*	Sauvegarde dans le fichier tous les mots de l'arbre
+*	dans le format d'un .DICO 
+*	(préfixe contenant \n si arbre null, ' ' si \0
+*	et si la lettre vaut \0 on ne sauvegarde que son frere droit
 */
-void afficheMenu() {
-        printf("Menu:\n");
-        printf("1 : Lexique -l nom_fichier (tri alphabétique)\n");
-        printf("2 : Lexique -s nom_fichier (sauvegarde arbre alphabétique)\n");
-        printf("3 : Lexique -r mot nom_fichier (recherche mot)\n");
-        printf("4 : Lexique -S nom_fichier (sauvegarde arbre)\n");
+void save_as_string(FILE *f, Arbre a){
+	if(a != NULL){
+		if(a->lettre != 0){
+			fprintf(f, "%c", a->lettre);
+			save_as_string(f,a->fg);
+		}
+		else 
+			fprintf(f," ");
+		save_as_string(f,a->frd);
+	}else{
+		fprintf(f,"\n");
+	}
+}
+
+
+/*
+*   Recherche un mot dans l'arbre:  return 1 présent.
+*                                   return 0 absent.
+*/
+int estPresent (Arbre *a, char const *mot){
+    if (*a == NULL){
+        return 0;
+    }
+    else if((*a)->lettre == mot[0]){
+        if(mot[0] == '\0'){
+            return 1;
+        }
+        else return estPresent(&((*a)->fg), &mot[1]);
+    }
+    else if((*a)->lettre < mot[0]){
+        return estPresent(&((*a)->frd), &mot[0]);
+    }
+    else if((*a)->lettre > mot[0]){
+        return 0;
+    }
+    return 0;
 }
 
 /*
-*   Reçoit le choix du menu -l ou -s ou -r ou -S
-*   lance la fonction correspondante
+*   Affiche le man
 */
-void traiteMenu(FILE *f, Arbre a, char mot, char choix) {
-    afficheMenu();
-    switch (choix){
-        case 'l':
-
-            break;
-        case 's':
-            save_alphabetical_order(f, a, NULL);
-            break;
-        case 'r':
-            estPresent(&a, &mot);
-            break;
-        case 'S':
-
-            break;
-
-    }
+void afficheHelp() {
+	if(system("cat man") != NULL)
+		printf("Impossible d'afficher le manuel.\n");
 }
 
-int main(int argc, char const *argv[])
+/*
+*   Affiche le menu de fonctionnalités
+*/
+void afficheMenu() {
+	printf("Menu :\n");
+	printf("\tl\t\t Afficher mots tri alphabétique\n");
+	printf("\ts\t\t Sauvegarde mot tri alphabétique dans fichier .L\n");
+	printf("\tr [mot]\t\t Indique si le mot est présent dans le fichier\n");
+	printf("\tS\t\t Sauvegarde l'arbre dans un fichier .DICO\n");
+	printf("\tq\t\t Quitter\n");
+}
+
+/*
+*   lance la fonction correspondante
+*	@params : 
+*/
+void traiteMenu(Arbre a, char *filename, char *choice, char *optional_params) {
+	if(strlen(choice) != 1)
+		printf("Option incomprise\n");
+	else{
+		char tmp_file_name[128];
+		switch (choice[0]){
+			case 'l':
+				save_alphabetical_order(stdout,a,NULL);
+				break;
+			case 's':
+				//Sauvegarde dans l'ordre alphabetique dans .L
+				strcpy(tmp_file_name, filename);
+				strcat(tmp_file_name,".L");
+				FILE *file_alphabetical_order = fopen(tmp_file_name, "w");
+				save_alphabetical_order(file_alphabetical_order,a,NULL);
+				fclose(file_alphabetical_order);
+				free(file_alphabetical_order);
+				printf("Données enregistrées dans le fichier %s\n",tmp_file_name);
+				break;
+			case 'r':
+				//Recherche d'un mot
+				if(optional_params == NULL)
+					printf("Merci de préciser le mot recherché\n");
+				else
+					if(estPresent(&a, optional_params) == 1)
+						printf("Le mot '%s' est est présent dans le fichier %s\n",optional_params,filename);
+					else
+						printf("Le mot '%s' est n'est pas présent dans le fichier %s\n",optional_params,filename);
+				break;
+			case 'S':
+				//Sauvegarde dans .DICO
+				strcpy(tmp_file_name, filename);
+				strcat(tmp_file_name,".DICO");
+				FILE *file_save_string = fopen(tmp_file_name, "w");
+				save_as_string(file_save_string,a);	
+				fclose(file_save_string);
+				free(file_save_string);
+				printf("Données enregistrées dans le fichier %s\n",tmp_file_name);
+				break;
+			default:
+				printf("Option inconnue\n");
+				break;
+		}
+	}
+}
+
+int main(int argc, char *argv[])
 {
 	if(argc == 1){
-		fprintf(stderr, "ERROR : Fichier non spécifié\n");
+		fprintf(stderr, "ERROR : Aucun parametre spécifié\n");
+		return 1;
+	}
+	if(strcmp(argv[1],"-h")  == 0){
+		afficheHelp();
 		return 1;
 	}
 
 	//Chargement du fichier mis en parametre
 	char filename[128];
-	strcpy(filename,argv[argc-1]);
+	strcpy(filename,argv[1]);
 	FILE *texte = fopen(filename, "r");	
 	if(texte == NULL){
 		fprintf(stderr, "ERROR : Fichier impossible à lire\n");	
@@ -140,14 +224,32 @@ int main(int argc, char const *argv[])
 	Arbre a = NULL;
 	read_file_load_tree(texte,&a);
 	
-	//Sauvegarde dans l'ordre alphabetique dans .L
-	FILE *file_alphabetical_order = fopen(strcat(filename,".L"), "w");
-	save_alphabetical_order(file_alphabetical_order,a,NULL);	
+	//Menu
+	if(argc == 2){
+		//Si aucune option mentionnée à l'execution
+		char choice[128]; 				//Choix sélectionné
+		char optional_params[128] = ""; //Parametre optionnel si necessaire
+		do{
+			printf("---------------------------------------\n");
+			afficheMenu();
+			printf("Votre choix : ");
+			scanf("%s", choice);
+			if(strlen(choice) == 1 && choice[0] == 'r') //Necessaire pour récuperer le mot pour la recherche
+				scanf("%s", optional_params);
+			printf("---------------------------------------\n");
+			
+			if(choice[0] != 'q')
+				traiteMenu(a,filename,choice,optional_params);
+		}while(strlen(choice) != 1 || choice[0] != 'q'); //Tant que pas 'q' on boucle
+	}else{
+		//Si une option mentionnée à l'execution
+		traiteMenu(a,filename,&argv[2][1],argv[3]);
+	}
 
 	//Free
 	fclose(texte);
 	free(texte);
-	fclose(file_alphabetical_order);
-	free(file_alphabetical_order);
+	//Free Arbre
+	//TODO
 	return 0;
 }
