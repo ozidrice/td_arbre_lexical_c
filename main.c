@@ -48,6 +48,32 @@ void ajoutMot(Arbre *a, char *mot){
 }
 
 
+
+/*
+*   Recherche un mot dans l'arbre:  return 1 présent.
+*                                   return 0 absent.
+*/
+int estPresent (Arbre *a, char *mot){
+    if (*a == NULL){
+        return 0;
+    }
+    else if((*a)->lettre == mot[0]){
+        if(mot[0] == '\0'){
+            return 1;
+        }
+        else estPresent(&((*a)->fg), &mot[1]);
+    }
+    else if((*a)->lettre < mot[0]){
+        estPresent(&((*a)->frd), &mot[0]);
+    }
+    else if((*a)->lettre > mot[0]){
+        return 0;
+    }
+    return 0;
+}
+
+
+
 /*
 *	Lit le fichier f et charge tout les mots dans l'arbre
 */
