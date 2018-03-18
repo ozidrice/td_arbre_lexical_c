@@ -1,0 +1,23 @@
+UTILISATION:    
+    ./Lexique -h 
+    	Affiche le manuel
+    
+    ./Lexique [fichier] [OPTION]     
+    	Execute Lexique (voir Description et Options)
+
+DESCRIPTION:    
+	Charge tous les mots contenus dans le fichier. 
+	Si aucune option n'est indiquée charge un menu demandant les actions souhaitées.
+	Sinon effectue l'action demandée.
+
+
+OPTIONS:    
+    -l      	Affiche tous les mots contenu dans le fichier dans l'ordre alphabétique.    
+ 
+    -s      	Sauvegarde tous les mots contenu dans le fichier dans l'ordre alphabétique dans un fichier 
+    		reprenant le nom du fichier en ajoutant l'extension [.L]    
+ 
+    -r [mot]    Recherche dans le fichier le mot et indique si il est présent.    
+ 
+    -S      	Sauvegarde l'arbre dans un dans un fichier reprenant le nom du fichier en ajoutant l'extension 
+    		[.DICO] permettant de le recharger plus tard.
