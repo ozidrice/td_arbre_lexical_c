@@ -1,3 +1,8 @@
+/*
+*   Auteurs : TROLARD Damien
+*             BRAVO Noélie
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,39 +44,15 @@ void ajoutMot(Arbre *a, char *mot){
 		ajoutMot(&((*a)->fg), &mot[1]);
 	}
 	else if ((*a)->lettre > mot[0]){
-		ajoutMot(&((*a)->frd), mot);
+        Arbre tmp = allocNoeud(mot[0], NULL, *a);
+        tmp->frd = *a;
+        *a = tmp;	
+        ajoutMot(&(tmp->fg), &mot[1]);
 	}
 	else if ((*a)->lettre < mot[0]){
-		//TODO
-		ajoutMot(&((*a)->frd), mot);//MARCHE PAS
+		ajoutMot(&((*a)->frd), mot);
 	}
 }
-
-
-
-/*
-*   Recherche un mot dans l'arbre:  return 1 présent.
-*                                   return 0 absent.
-*/
-int estPresent (Arbre *a, char *mot){
-    if (*a == NULL){
-        return 0;
-    }
-    else if((*a)->lettre == mot[0]){
-        if(mot[0] == '\0'){
-            return 1;
-        }
-        else estPresent(&((*a)->fg), &mot[1]);
-    }
-    else if((*a)->lettre < mot[0]){
-        estPresent(&((*a)->frd), &mot[0]);
-    }
-    else if((*a)->lettre > mot[0]){
-        return 0;
-    }
-    return 0;
-}
-
 
 
 /*
@@ -103,6 +84,40 @@ void save_alphabetical_order(FILE *f, Arbre a, char *str){
 		save_alphabetical_order(f,a->fg,tmp);
 		save_alphabetical_order(f,a->frd,str);
 	}
+}
+
+/*
+*   Affiche le menu de fonctionnalités
+*/
+void afficheMenu() {
+        printf("Menu:\n");
+        printf("1 : Lexique -l nom_fichier (tri alphabétique)\n");
+        printf("2 : Lexique -s nom_fichier (sauvegarde arbre alphabétique)\n");
+        printf("3 : Lexique -r mot nom_fichier (recherche mot)\n");
+        printf("4 : Lexique -S nom_fichier (sauvegarde arbre)\n");
+}
+
+/*
+*   Reçoit le choix du menu -l ou -s ou -r ou -S
+*   lance la fonction correspondante
+*/
+void traiteMenu(FILE *f, Arbre a, char mot, char choix) {
+    afficheMenu();
+    switch (choix){
+        case 'l':
+
+            break;
+        case 's':
+            save_alphabetical_order(f, a, NULL);
+            break;
+        case 'r':
+            estPresent(&a, &mot);
+            break;
+        case 'S':
+
+            break;
+
+    }
 }
 
 int main(int argc, char const *argv[])
