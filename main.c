@@ -107,6 +107,25 @@ void save_as_string(FILE *f, Arbre a){
 	}
 }
 
+/*
+*	Recharge un arbre depuis un fichier .DICO 
+*	(Voir fonction save_as_string)
+*/
+void read_DICO(FILE *f, Arbre *a){
+	char c;
+	Arbre *tmp = a;
+	if(fscanf(f,"%c",&c) != EOF){
+		if(c == ' '){
+			(*tmp)->lettre = '\0';
+		}else if(c == '\n'){
+			tmp = NULL;
+		}else{
+			read_DICO(f,&((*tmp)->fg));
+		}
+		read_DICO(f,&((*tmp)->frd));
+	}
+}
+
 
 /*
 *   Recherche un mot dans l'arbre:  return 1 présent.
@@ -262,6 +281,15 @@ void traiteMenu(Arbre a, char *filename, char *choice, char *optional_param) {
 			case 'V':
 				//View Tree avec dot
 				viewTree(filename, a);
+				break;
+			case 'L':
+				//Load from DICO
+				strcpy(tmp_file_name, filename);
+				strcat(tmp_file_name,".DICO");
+				FILE *f = fopen(tmp_file_name,"w");
+				read_DICO(f,a);
+				viewTree(filename, a);
+				fclose(f);
 				break;
 			default:
 				printf("Option inconnue\n");
