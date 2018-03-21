@@ -131,11 +131,70 @@ int estPresent (Arbre *a, char const *mot){
     return 0;
 }
 
+
+/*
+*	Créé le contenu d'un fichier dot
+*/
+void createDotGraphContent(Arbre a, FILE *f){
+	if(a != NULL){	
+		if(a->lettre == '\0')
+			fprintf(f, "struct%p[label=\"<f0> |<f1> \\\\0|<f2> \"];\n", a);
+		else
+			fprintf(f, "struct%p[label=\"<f0> |<f1> %c|<f2> \"];\n", a, a->lettre);
+		if(!(a->frd == NULL && a->fg == NULL)){
+			if(a->fg != NULL){
+				fprintf(f, "struct%p:f0 -> struct%p:f1;\n", a, a->fg);
+				createDotGraphContent(a->fg,f);
+			}
+			if(a->frd != NULL){
+				fprintf(f, "struct%p:f2 -> struct%p:f1;\n", a, a->frd);
+				createDotGraphContent(a->frd,f);
+			}
+		}
+	}
+}
+
+/*
+*	Génère un fichier tree.dot correspondant à l'arbre
+*	Créé via la commande dot le pdf lui correspondant
+*	Affiche l'arbre via evince 
+*/
+void viewTree(char *filename, Arbre a){
+	if(a != NULL && filename != NULL){		
+		//Create dot file
+		char dot_file_name[128];
+		strcpy(dot_file_name, filename);  
+		strcat(dot_file_name,".dot");
+		FILE *f = fopen(dot_file_name,"w");
+
+		//Creation du fichier dot
+		fprintf(f, "digraph D {\nnode [shape=record];\n");
+		createDotGraphContent(a,f);
+		fprintf(f, "}");
+		
+		//Creation du pdf
+		if(system("rm -f tree.pdf") == NULL){
+			char dot_command[128] = "dot -Tpdf "; //tree.dot -o tree.pdf
+			strcat(dot_command, dot_file_name);
+			strcat(dot_command, " -o tree.pdf");
+			printf("%s\n",dot_command );
+			if(system(dot_command) == NULL){
+				if(system("evince -w tree.pdf")){
+					printf("Lancement du PDF...\n");
+				}
+			}
+		}
+		fclose(f);
+	}else{
+		printf("[ERROR] : Impossible d'afficher l'arbre\n");
+	}
+}
+
 /*
 *   Affiche le man
 */
 void afficheHelp() {
-	if(system("cat man") != NULL)
+	if(system("cat man"))
 		printf("Impossible d'afficher le manuel.\n");
 }
 
@@ -148,14 +207,20 @@ void afficheMenu() {
 	printf("\ts\t\t Sauvegarde mot tri alphabétique dans fichier .L\n");
 	printf("\tr [mot]\t\t Indique si le mot est présent dans le fichier\n");
 	printf("\tS\t\t Sauvegarde l'arbre dans un fichier .DICO\n");
+	printf("\tV\t\t Affiche l'arbre sous forme de PDF [Necessite dot & evince]\n");
 	printf("\tq\t\t Quitter\n");
 }
 
+
 /*
 *   lance la fonction correspondante
-*	@params : 
+*	@params
+*	Arbre a = Arbre chargé
+*	Filename = Nom du fichier à traiter
+*	choice = Choix du menu
+*	optional_param : Parametre supplémentaire si necessaire
 */
-void traiteMenu(Arbre a, char *filename, char *choice, char *optional_params) {
+void traiteMenu(Arbre a, char *filename, char *choice, char *optional_param) {
 	if(strlen(choice) != 1)
 		printf("Option incomprise\n");
 	else{
@@ -176,13 +241,13 @@ void traiteMenu(Arbre a, char *filename, char *choice, char *optional_params) {
 				break;
 			case 'r':
 				//Recherche d'un mot
-				if(optional_params == NULL)
+				if(optional_param == NULL)
 					printf("Merci de préciser le mot recherché\n");
 				else
-					if(estPresent(&a, optional_params) == 1)
-						printf("Le mot '%s' est est présent dans le fichier %s\n",optional_params,filename);
+					if(estPresent(&a, optional_param) == 1)
+						printf("Le mot '%s' est est présent dans le fichier %s\n",optional_param,filename);
 					else
-						printf("Le mot '%s' est n'est pas présent dans le fichier %s\n",optional_params,filename);
+						printf("Le mot '%s' est n'est pas présent dans le fichier %s\n",optional_param,filename);
 				break;
 			case 'S':
 				//Sauvegarde dans .DICO
@@ -193,6 +258,10 @@ void traiteMenu(Arbre a, char *filename, char *choice, char *optional_params) {
 				fclose(file_save_string);
 				free(file_save_string);
 				printf("Données enregistrées dans le fichier %s\n",tmp_file_name);
+				break;
+			case 'V':
+				//View Tree avec dot
+				viewTree(filename, a);
 				break;
 			default:
 				printf("Option inconnue\n");
@@ -229,18 +298,18 @@ int main(int argc, char *argv[])
 	if(argc == 2){
 		//Si aucune option mentionnée à l'execution
 		char choice[128]; 				//Choix sélectionné
-		char optional_params[128] = ""; //Parametre optionnel si necessaire
+		char optional_param[128] = ""; //Parametre optionnel si necessaire
 		do{
 			printf("---------------------------------------\n");
 			afficheMenu();
 			printf("Votre choix : ");
 			scanf("%s", choice);
 			if(strlen(choice) == 1 && choice[0] == 'r') //Necessaire pour récuperer le mot pour la recherche
-				scanf("%s", optional_params);
+				scanf("%s", optional_param);
 			printf("---------------------------------------\n");
 			
 			if(choice[0] != 'q')
-				traiteMenu(a,filename,choice,optional_params);
+				traiteMenu(a,filename,choice,optional_param);
 		}while(strlen(choice) != 1 || choice[0] != 'q'); //Tant que pas 'q' on boucle
 	}else{
 		//Si une option mentionnée à l'execution
