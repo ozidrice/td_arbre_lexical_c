@@ -270,6 +270,17 @@ void traiteMenu(Arbre a, char *filename, char *choice, char *optional_param) {
 	}
 }
 
+/*
+* Libère la mémoire allouée a l'arbre
+*/
+void free_arbre(Arbre a){
+    if(a != NULL){
+        free_arbre(a->fg);
+        free_arbre(a->frd);
+        free(a);
+    }
+}
+
 int main(int argc, char *argv[])
 {
 	if(argc == 1){
@@ -319,9 +330,6 @@ int main(int argc, char *argv[])
 	//Free
 	fclose(texte);
 	free(texte);
-
-	
-	//Free Arbre
-	//TODO
+	free_arbre(a);
 	return 0;
 }
