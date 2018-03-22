@@ -184,6 +184,7 @@ void viewTree(char *filename, Arbre a){
 		createDotGraphContent(a,f);
 		fprintf(f, "}");
 		fflush(f);
+		
 		//Creation du pdf
 		if(system("rm -f tree.pdf") == 0){
 			char dot_command[128] = "dot -Tpdf "; 
@@ -309,6 +310,7 @@ int load_from_dico(char *filename, Arbre *a){
 	fclose(texte_DICO);
 	return 0;
 }
+
 
 /*
 *	Charge l'arbre a depuis un fichier contenant du texte
