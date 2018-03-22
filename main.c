@@ -183,14 +183,13 @@ void viewTree(char *filename, Arbre a){
 		fprintf(f, "digraph D {\nnode [shape=record];\n");
 		createDotGraphContent(a,f);
 		fprintf(f, "}");
-		
+		fflush(f);
 		//Creation du pdf
 		if(system("rm -f tree.pdf") == 0){
-			char dot_command[128] = "dot -Tpdf "; //tree.dot -o tree.pdf
+			char dot_command[128] = "dot -Tpdf "; 
 			strcat(dot_command, dot_file_name);
-			strcat(dot_command, " -o tree.pdf");
-			printf("%s\n",dot_command );
-			if(system(dot_command) == 0){
+			strcat(dot_command, " -o tree.pdf -Gcharset=latin1");
+			if(system(dot_command) == 0){ //dot -Tpdf ... -o tree.pdf -Gcharset=latin1
 				if(system("evince -w tree.pdf") == 0){
 					printf("Lancement du PDF...\n");
 				}
