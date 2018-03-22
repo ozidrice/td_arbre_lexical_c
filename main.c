@@ -56,15 +56,6 @@ void ajoutMot(Arbre *a, char *mot){
 }
 
 
-/*
-*	Lit le fichier f et charge tout les mots dans l'arbre
-*/
-void read_file_load_tree(FILE *f, Arbre *a){
-	char tmp[MAX_STRING_LENGTH];
-	while(fscanf(f,"%51s ",tmp) != EOF){
-		ajoutMot(a,tmp);
-	}
-}
 
 /*
 *	Sauvegarde dans le fichier tous les mots de l'arbre dans l'ordre alphabétique 
@@ -115,14 +106,16 @@ void read_DICO(FILE *f, Arbre *a){
 	char c;
 	Arbre *tmp = a;
 	if(fscanf(f,"%c",&c) != EOF){
-		if(c == ' '){
-			(*tmp)->lettre = '\0';
-		}else if(c == '\n'){
+		if(c == '\n'){
 			tmp = NULL;
 		}else{
-			read_DICO(f,&((*tmp)->fg));
+			*tmp = allocNoeud(0,NULL,NULL); 
+			if(c != ' '){
+				(*tmp)->lettre = c;
+				read_DICO(f,&((*tmp)->fg));
+			}
+			read_DICO(f,&((*tmp)->frd));
 		}
-		read_DICO(f,&((*tmp)->frd));
 	}
 }
 
@@ -192,13 +185,13 @@ void viewTree(char *filename, Arbre a){
 		fprintf(f, "}");
 		
 		//Creation du pdf
-		if(system("rm -f tree.pdf") == NULL){
+		if(system("rm -f tree.pdf") == 0){
 			char dot_command[128] = "dot -Tpdf "; //tree.dot -o tree.pdf
 			strcat(dot_command, dot_file_name);
 			strcat(dot_command, " -o tree.pdf");
 			printf("%s\n",dot_command );
-			if(system(dot_command) == NULL){
-				if(system("evince -w tree.pdf")){
+			if(system(dot_command) == 0){
+				if(system("evince -w tree.pdf") == 0){
 					printf("Lancement du PDF...\n");
 				}
 			}
@@ -213,7 +206,7 @@ void viewTree(char *filename, Arbre a){
 *   Affiche le man
 */
 void afficheHelp() {
-	if(system("cat man"))
+	if(system("cat man") == 0)
 		printf("Impossible d'afficher le manuel.\n");
 }
 
@@ -254,9 +247,9 @@ void traiteMenu(Arbre a, char *filename, char *choice, char *optional_param) {
 				strcat(tmp_file_name,".L");
 				FILE *file_alphabetical_order = fopen(tmp_file_name, "w");
 				save_alphabetical_order(file_alphabetical_order,a,NULL);
+				printf("Données enregistrées dans le fichier %s\n",tmp_file_name);
 				fclose(file_alphabetical_order);
 				free(file_alphabetical_order);
-				printf("Données enregistrées dans le fichier %s\n",tmp_file_name);
 				break;
 			case 'r':
 				//Recherche d'un mot
@@ -274,22 +267,13 @@ void traiteMenu(Arbre a, char *filename, char *choice, char *optional_param) {
 				strcat(tmp_file_name,".DICO");
 				FILE *file_save_string = fopen(tmp_file_name, "w");
 				save_as_string(file_save_string,a);	
+				printf("Données enregistrées dans le fichier %s\n",tmp_file_name);
 				fclose(file_save_string);
 				free(file_save_string);
-				printf("Données enregistrées dans le fichier %s\n",tmp_file_name);
 				break;
 			case 'V':
 				//View Tree avec dot
 				viewTree(filename, a);
-				break;
-			case 'L':
-				//Load from DICO
-				strcpy(tmp_file_name, filename);
-				strcat(tmp_file_name,".DICO");
-				FILE *f = fopen(tmp_file_name,"w");
-				read_DICO(f,a);
-				viewTree(filename, a);
-				fclose(f);
 				break;
 			default:
 				printf("Option inconnue\n");
@@ -297,6 +281,53 @@ void traiteMenu(Arbre a, char *filename, char *choice, char *optional_param) {
 		}
 	}
 }
+
+
+/*
+*	Lit le fichier f et charge tout les mots dans l'arbre
+*/
+void read_file_load_tree(FILE *f, Arbre *a){
+	char tmp[MAX_STRING_LENGTH];
+	while(fscanf(f,"%51s ",tmp) != EOF){
+		ajoutMot(a,tmp);
+	}
+}
+
+
+
+/*
+*	Charge l'arbre a depuis un fichier DICO
+*	@param : 	filename : Nom du fichier .DICO 
+*				a : Arbre NULL
+* 	@return :  	1 si probleme au chargement
+*				0 si OK
+*/
+int load_from_dico(char *filename, Arbre *a){
+	FILE *texte_DICO = fopen(filename, "r");
+	if(texte_DICO == NULL)
+		return 1;
+	read_DICO(texte_DICO,a);
+	fclose(texte_DICO);
+	return 0;
+}
+
+/*
+*	Charge l'arbre a depuis un fichier contenant du texte
+*	@param : 	filename : Nom du fichier .DICO 
+*				a : Arbre NULL
+* 	@return :  	1 si probleme au chargement
+*				0 si OK
+*/
+int load_from_file(char *filename, Arbre *a){
+	FILE *texte = fopen(filename, "r");		
+	if(texte == NULL)
+		return 1;
+	read_file_load_tree(texte,a);
+	fclose(texte);
+	return 0;
+}
+
+
 
 int main(int argc, char *argv[])
 {
@@ -309,18 +340,31 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	//Chargement du fichier mis en parametre
+	//Création de l'arbre
+	Arbre a = NULL;
 	char filename[128];
-	strcpy(filename,argv[1]);
-	FILE *texte = fopen(filename, "r");	
-	if(texte == NULL){
-		fprintf(stderr, "ERROR : Fichier impossible à lire\n");	
-		return 1;
+	
+	if(argc >= 3 && strcmp(argv[1],"-L")  == 0){
+		strcpy(filename,argv[2]);
+		//Chargement depuis fichier DICO
+		char DICO_filename[128];
+		strcpy(DICO_filename, filename);
+		strcat(DICO_filename, ".DICO");
+		if(load_from_dico(DICO_filename,&a) != 0){
+			fprintf(stderr, "ERROR : Fichier %s illisible\n",DICO_filename);
+			return 1;	
+		}
+		argv = argv+1; 	
+		argc--;	
+	}else{
+		//Lit dans le fichier
+		strcpy(filename,argv[1]);
+		if(load_from_file(filename, &a) != 0){
+			fprintf(stderr, "ERROR : fichier %s illisible\n",filename);
+			return 1;	
+		}
 	}
 
-	//Creation de l'arbre
-	Arbre a = NULL;
-	read_file_load_tree(texte,&a);
 	
 	//Menu
 	if(argc == 2){
@@ -344,9 +388,6 @@ int main(int argc, char *argv[])
 		traiteMenu(a,filename,&argv[2][1],argv[3]);
 	}
 
-	//Free
-	fclose(texte);
-	free(texte);
 
 	
 	//Free Arbre

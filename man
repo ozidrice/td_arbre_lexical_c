@@ -2,7 +2,7 @@ UTILISATION:
     ./Lexique -h 
     	Affiche le manuel
     
-    ./Lexique [fichier] [OPTION]     
+    ./Lexique [LOAD_TYPE] [fichier] [OPTION]     
     	Execute Lexique (voir Description et Options)
 
 DESCRIPTION:    
@@ -10,6 +10,8 @@ DESCRIPTION:
 	Si aucune option n'est indiquée charge un menu demandant les actions souhaitées.
 	Sinon effectue l'action demandée.
 
+LOAD_TYPE:
+    -L          Forcer le chargement depuis le fichier .DICO généré via l'option -S
 
 OPTIONS:    
     -l      	Affiche tous les mots contenu dans le fichier dans l'ordre alphabétique.    
