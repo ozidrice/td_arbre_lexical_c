@@ -328,6 +328,18 @@ int load_from_file(char *filename, Arbre *a){
 }
 
 
+/*
+* Libère la mémoire allouée a l'arbre
+*/
+void free_arbre(Arbre a){
+    if(a != NULL){
+        free_arbre(a->fg);
+        free_arbre(a->frd);
+        free(a);
+    }
+}
+
+
 
 int main(int argc, char *argv[])
 {
@@ -387,10 +399,8 @@ int main(int argc, char *argv[])
 		//Si une option mentionnée à l'execution
 		traiteMenu(a,filename,&argv[2][1],argv[3]);
 	}
-
-
 	
 	//Free Arbre
-	//TODO
+	free_arbre(a);
 	return 0;
 }
