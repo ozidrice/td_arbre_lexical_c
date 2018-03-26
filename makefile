@@ -1,9 +1,9 @@
 CC       =  gcc
-CFLAGS   = -Wall -O2 -g
+CFLAGS   =  
 LIB      = -lSDL -lGLU -lGL -lm  
 INCLUDES = 
 
-OBJ      = main.o 
+OBJ      = Lexique.o 
 RM       = rm -f
 BIN      = Lexique
 DIRNAME  = $(shell basename $$PWD)
@@ -15,11 +15,11 @@ all : $(BIN)
 $(BIN) : $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(LIB) $(INCLUDES)  -o $(BIN)
 	@echo "--------------------------------------------------------------"
-	@echo "                 to execute type: ./$(BIN) &"
+	@echo "                 to execute type: ./$(BIN)"
 	@echo "--------------------------------------------------------------"
 
-main.o : main.c
-	@echo "compile main"
+Lexique.o : Lexique.c
+	@echo "compile Lexique"
 	$(CC) $(CFLAGS) -c $<  
 	@echo "done..."
 
