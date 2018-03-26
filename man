@@ -21,7 +21,8 @@ OPTIONS:
  
     -r [mot]    Recherche dans le fichier le mot et indique si il est présent.    
  
-    -S      	Sauvegarde l'arbre dans un dans un fichier reprenant le nom du fichier en ajoutant l'extension 
+    -S      	Sauvegarde l'arbre dans un fichier reprenant le nom du fichier en ajoutant l'extension 
     		[.DICO] permettant de le recharger plus tard.
+		
     -V          Affiche l'arbre sous forme de PDF 
             [ATTENTION : Necessite dot & evince]
