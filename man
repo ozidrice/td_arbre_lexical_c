@@ -2,7 +2,7 @@ UTILISATION:
     ./Lexique -h 
     	Affiche le manuel
     
-    ./Lexique [LOAD_TYPE] [fichier] [OPTION]     
+    ./Lexique [LOAD_TYPE] fichier [OPTION]     
     	Execute Lexique (voir Description et Options)
 
 DESCRIPTION:    
